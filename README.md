@@ -4,9 +4,9 @@
  简易的视频水印添加工具
 
 
-##Usage
+## Usage
 
-###QuickStart
+### QuickStart
 ```
 let water = WaterMarkMaker()
 
@@ -24,7 +24,7 @@ water.addWaterMark(asset: asset, watermarks: autoWM) { (result) in
 
 ```
 
-###how to use
+### how to use
 
 1. init WaterMarkMaker
 
