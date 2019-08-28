@@ -10,7 +10,7 @@ import Foundation
 import AVFoundation
 import UIKit
 
-/// 水印
+/// 水印,无动画效果时为透明
 /// - view: 要添加为水印的UIView
 /// - beginTime: 水印出现的时间
 /// - duration: 水印持续的时间
@@ -26,7 +26,7 @@ struct WaterMark {
     
     var animationGroup:CAAnimationGroup? = nil
 }
-
+/// 生成水印视频
 class WaterMarkMaker {
     
     static let videoID:CMPersistentTrackID = 0xBBBB
@@ -51,7 +51,7 @@ class WaterMarkMaker {
      3. 生成Layer,parentLayer包含了水印layer和videoLayer, videoLayer一层用于播放视频
      4. 对视频的一些加工指令整合到videoComp
      5. 得到用于输出视频文件的exporter
-    */
+     */
     /// 生成带有水印的视频
     ///
     /// - Parameters:
@@ -74,6 +74,7 @@ class WaterMarkMaker {
             for watermark in watermarks {
                 let watermarkLayer = generateWaterMarkLayer(watermark: watermark)
                 parentLayer.addSublayer(watermarkLayer)
+                
             }
             
             parentLayer.isGeometryFlipped = true
@@ -100,27 +101,39 @@ class WaterMarkMaker {
             return
         }
     }
-    
-    ///覆盖整个视频时长的水印,2~6秒变换一次位置,两个位置固定
-    @available(*,deprecated)
-    func autoAddWaterMark(asset:AVAsset,watermarkImage:UIImage,imageSize:CGSize) throws -> [WaterMark]{
+    ///传入视频和水印图片,自动生成填充整个视频的随机时间位置的水印组
+    func autoAddWaterMark(asset:AVAsset,watermarkImage:UIImage) throws -> [WaterMark]{
         let seconds = Double(CMTimeGetSeconds(asset.duration))
         print(seconds)
         let size = try getTracks(from: asset).videoTrack.naturalSize
-        print(size)
         
         var watermarks:[WaterMark] = []
         
+        struct Scale {
+            let size:(width:CGFloat,height:CGFloat)
+            let leftP:(x:CGFloat,y:CGFloat)
+            let rightP:(x:CGFloat,y:CGFloat)
+        }
+        
+        let horizonScale = Scale(size: (width: 166.0/1280, height: 64.0/720), leftP: (x: 24.0/1280, y: 24.0/720), rightP: (x: 1-((166+24)/1280.0), y: 24.0/720))
+        let verticalScale = Scale(size: (width:166.0/720,height:64.0/1280), leftP: (x:24.0/720,y:24/1280.0), rightP: (x:1-((166+24)/720.0),y:24/1280.0))
+        
         var current = 0.01
         var flag = Bool.random()
+        var leftP:CGPoint!
+        var rightP:CGPoint!
         
-        let leftP = CGPoint(x: 12.0/2 ,y: 12.0/2)
-        let rightP = CGPoint(x: size.width/2.0 - 12.0/2 - imageSize.width/2, y: 12.0/2)
+        let scale = size.width > size.height ? horizonScale : verticalScale
+        let waterMarkSize = CGSize(width: size.width * scale.size.width, height: size.height * scale.size.height)
+        leftP = CGPoint(x: size.width * scale.leftP.x * 0.5, y: size.height * scale.leftP.y * 0.5)
+        rightP = CGPoint(x: size.width * scale.rightP.x * 0.5, y: size.height * scale.rightP.y * 0.5)
+        
         
         while current < seconds {
-            let duration = Double.random(in: 2...6)
+            let duration = Double.random(in: 20...60)
+            
             let imageview = UIImageView(image: watermarkImage)
-            imageview.frame = CGRect(origin: flag ? leftP : rightP, size: imageSize)
+            imageview.frame = CGRect(origin: flag ? leftP : rightP, size: waterMarkSize)
             imageview.contentMode = .scaleAspectFill
             
             let waterMark = WaterMark(view: imageview, beginTime: current, duration: duration, animationGroup: nil)
@@ -182,7 +195,7 @@ class WaterMarkMaker {
     private func generateWaterMarkLayer(watermark:WaterMark) -> CALayer {
         
         let basicAnimation = opacityAnimation(beginTime: watermark.beginTime, duration: watermark.duration)
-
+        
         let layer = CALayer()
         layer.addSublayer(watermark.view.layer)
         layer.frame = watermark.view.frame
@@ -220,66 +233,6 @@ class WaterMarkMaker {
         exporter.shouldOptimizeForNetworkUse = true
         exporter.videoComposition = videoComposition
         return exporter
-    }
-    
-    
-    // - MARK: 不再使用
-    /// 生成水印视频
-    ///
-    /// - Parameters:
-    ///   - inputURL: 输入视频文件的url
-    ///   - watermarkView: 待添加水印的View
-    ///   - beginTime: 水印出现时间
-    ///   - duration: 水印存在时间
-    ///   - completion: 视频文件生成完毕的回调
-    ///
-    /// watermarkView的frame即为水印在视频出现的位置
-    @available(*,deprecated)
-    func addWaterMark(inputURL:URL,watermarkView:UIView,beginTime:CFTimeInterval,duration:CFTimeInterval,completion:@escaping (Result)->Void) {
-        do {
-            let asset = AVURLAsset(url: inputURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey:true])
-            let assetTracks = try getTracks(from: asset)
-            let mixComposition = initComposition()
-            
-            try mixComposition.track(withTrackID: WaterMarkMaker.audioID)!.insertTimeRange(CMTimeRange(start: .zero, duration: assetTracks.audioTrack.asset!.duration), of: assetTracks.audioTrack, at: .zero)
-            try mixComposition.track(withTrackID: WaterMarkMaker.videoID)!.insertTimeRange(CMTimeRange(start: .zero, duration: assetTracks.videoTrack.asset!.duration), of: assetTracks.videoTrack, at: .zero)
-            
-            mixComposition.track(withTrackID: WaterMarkMaker.videoID)!.preferredTransform = assetTracks.videoTrack.preferredTransform
-            
-            let parentLayer = CALayer()
-            let videoLayer = CALayer()
-            
-            parentLayer.frame = CGRect(origin: .zero, size: assetTracks.videoTrack.naturalSize)
-            videoLayer.frame = CGRect(origin: .zero, size: assetTracks.videoTrack.naturalSize)
-            
-            let waterMarkLayer = generateWaterMarkLayer(view: watermarkView, beginTime: beginTime, duration: duration)
-            parentLayer.addSublayer(videoLayer)
-            parentLayer.addSublayer(waterMarkLayer)
-            parentLayer.isGeometryFlipped = true
-            
-            let videoComp = generateVideoComposition(size: assetTracks.videoTrack.naturalSize, mixComposition: mixComposition, videoLayer: videoLayer)
-            let exporter = try Exporter(asset: mixComposition, videoComposition: videoComp)
-            
-            exporter.exportAsynchronously {
-                DispatchQueue.main.async {
-                    if let outputError =  exporter.error {
-                        let result = Result.failure(outputError)
-                        completion(result)
-                        return
-                    }else {
-                        let result = Result.success(exporter.outputURL!)
-                        print(exporter.outputURL!)
-                        completion(result)
-                        return
-                    }
-                }
-            }
-            
-        } catch {
-            let result = Result.failure(error)
-            completion(result)
-            return
-        }
     }
 }
 
