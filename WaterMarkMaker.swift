@@ -20,6 +20,7 @@ import UIKit
 ///
 /// 否则需要自行添加到group中,可通过opacityAnimation添加
 struct WaterMark {
+    /// view.frame is needed
     let view:UIView
     let beginTime:CFTimeInterval
     let duration:CFTimeInterval
@@ -113,24 +114,29 @@ class WaterMarkMaker {
             let size:(width:CGFloat,height:CGFloat)
             let leftP:(x:CGFloat,y:CGFloat)
             let rightP:(x:CGFloat,y:CGFloat)
+            
+            static let horizon16to9 = Scale(size: (width: 166.0/1280, height: 64.0/720), leftP: (x: 24.0/1280, y: 24.0/720), rightP: (x: 1-((166+24)/1280.0), y: 24.0/720))
+            
+            static let vertical16to9 = Scale(size: (width:166.0/720,height:64.0/1280), leftP: (x:24.0/720,y:24/1280.0), rightP: (x:1-((166+24)/720.0),y:24/1280.0))
+            
+            func getScaledSize(size:CGSize) -> CGSize{
+                return CGSize(width: size.width * self.size.width, height: size.height * self.size.height)
+            }
         }
-        
-        let horizonScale = Scale(size: (width: 166.0/1280, height: 64.0/720), leftP: (x: 24.0/1280, y: 24.0/720), rightP: (x: 1-((166+24)/1280.0), y: 24.0/720))
-        let verticalScale = Scale(size: (width:166.0/720,height:64.0/1280), leftP: (x:24.0/720,y:24/1280.0), rightP: (x:1-((166+24)/720.0),y:24/1280.0))
         
         var current = 0.01
         var flag = Bool.random()
         var leftP:CGPoint!
         var rightP:CGPoint!
         
-        let scale = size.width > size.height ? horizonScale : verticalScale
+        let scale = size.width > size.height ? Scale.horizon16to9 : Scale.vertical16to9
         let waterMarkSize = CGSize(width: size.width * scale.size.width, height: size.height * scale.size.height)
         leftP = CGPoint(x: size.width * scale.leftP.x * 0.5, y: size.height * scale.leftP.y * 0.5)
         rightP = CGPoint(x: size.width * scale.rightP.x * 0.5, y: size.height * scale.rightP.y * 0.5)
         
         
         while current < seconds {
-            let duration = Double.random(in: 20...60)
+            let duration = Double.random(in: 2...3)
             
             let imageview = UIImageView(image: watermarkImage)
             imageview.frame = CGRect(origin: flag ? leftP : rightP, size: waterMarkSize)
