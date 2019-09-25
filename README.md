@@ -1,7 +1,9 @@
 # WatermarkMaker
  A Swift WatermarkMaker for iOS
- 
+
  简易的视频水印添加工具
+ 
+ 工程中的Example供效果展示
 
 
 ## Usage
@@ -11,7 +13,7 @@
 let water = WaterMarkMaker()
 
 let asset = AVURLAsset(url: videourl, options: [AVURLAssetPreferPreciseDurationAndTimingKey:true])
-let autoWM = try! water.autoAddWaterMark(asset: asset, watermarkImage: UIImage(named: "test")!, imageSize: CGSize(width: 80, height: 80))
+let autoWM = try! water.generateRandomWaterMarks(asset: asset, watermarkImage: UIImage(named: "test")!, imageSize: CGSize(width: 80, height: 80))
     
 water.addWaterMark(asset: asset, watermarks: autoWM) { (result) in
     switch result {
@@ -32,6 +34,8 @@ water.addWaterMark(asset: asset, watermarks: autoWM) { (result) in
 2. init your WaterMarkView (UIView)
 
 	`let view1 = UILabel() //UIImage() etc`
+	
+	`view.frame` is needed
 3. init WaterMark
 	
 	```
@@ -58,7 +62,7 @@ water.addWaterMark(asset: asset, watermarks: autoWM) { (result) in
 	        print(error.localizedDescription)
 	    }
 	}
-	```        
+	```
 	
-##issues
+## issues
 1. `WaterMark.beginTime` should be greater than 0

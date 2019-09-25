@@ -19,26 +19,40 @@ import UIKit
 /// animationGroup 为nil时,默认存在水印的出现与消失动画,
 ///
 /// 否则需要自行添加到group中,可通过opacityAnimation添加
-struct WaterMark {
-    /// view.frame is needed
-    let view:UIView
-    let beginTime:CFTimeInterval
-    let duration:CFTimeInterval
+public struct WaterMark {
+    /// view.frame is required
+    public let view:UIView
+    public let beginTime:CFTimeInterval
+    public let duration:CFTimeInterval
     
-    var animationGroup:CAAnimationGroup? = nil
+    public var animationGroup:CAAnimationGroup?
+    
+    public init(view:UIView,beginTime:CFTimeInterval,duration:CFTimeInterval,animationGroup:CAAnimationGroup? = nil){
+        self.view = view
+        self.beginTime = beginTime
+        self.duration = duration
+        self.animationGroup = animationGroup
+    }
 }
+
+public enum Result {
+    case success(URL)
+    case failure(Error)
+}
+
 /// 生成水印视频
-class WaterMarkMaker {
+public class WaterMarkMaker {
+    
+    public static let shared = WaterMarkMaker()
+    
+    private init(){
+        
+    }
     
     static let videoID:CMPersistentTrackID = 0xBBBB
     static let audioID:CMPersistentTrackID = 0xFFFF
     
-    enum Result {
-        case success(URL)
-        case failure(Error)
-    }
-    
-    enum WaterMarkerError:Error {
+    public enum WaterMarkerError:Error {
         case assetTrackNil
         case exporterNil
         case exportError
@@ -61,7 +75,7 @@ class WaterMarkMaker {
     ///     - 传递参数 [AVURLAssetPreferPreciseDurationAndTimingKey:true]
     ///   - watermarks: 要添加的多个水印,水印数组
     ///   - completion: 视频生成完成的回调
-    func addWaterMark(asset:AVAsset,watermarks:[WaterMark],completion:@escaping (Result)->Void) {
+    public func addWaterMark(asset:AVAsset,watermarks:[WaterMark],completion:@escaping (Result)->Void) {
         do {
             let assetTracks = try getTracks(from: asset)
             let mixComposition = try initComposition(assetTracks: assetTracks)
@@ -103,9 +117,10 @@ class WaterMarkMaker {
         }
     }
     ///传入视频和水印图片,自动生成填充整个视频的随机时间位置的水印组
-    func autoAddWaterMark(asset:AVAsset,watermarkImage:UIImage) throws -> [WaterMark]{
+    /// 目前只针对16:9视频使用
+    public func generateRandomWaterMarks(asset:AVAsset,watermarkImage:UIImage) throws -> [WaterMark]{
         let seconds = Double(CMTimeGetSeconds(asset.duration))
-        print(seconds)
+        
         let size = try getTracks(from: asset).videoTrack.naturalSize
         
         var watermarks:[WaterMark] = []
@@ -114,22 +129,17 @@ class WaterMarkMaker {
             let size:(width:CGFloat,height:CGFloat)
             let leftP:(x:CGFloat,y:CGFloat)
             let rightP:(x:CGFloat,y:CGFloat)
-            
-            static let horizon16to9 = Scale(size: (width: 166.0/1280, height: 64.0/720), leftP: (x: 24.0/1280, y: 24.0/720), rightP: (x: 1-((166+24)/1280.0), y: 24.0/720))
-            
-            static let vertical16to9 = Scale(size: (width:166.0/720,height:64.0/1280), leftP: (x:24.0/720,y:24/1280.0), rightP: (x:1-((166+24)/720.0),y:24/1280.0))
-            
-            func getScaledSize(size:CGSize) -> CGSize{
-                return CGSize(width: size.width * self.size.width, height: size.height * self.size.height)
-            }
         }
+        
+        let horizonScale = Scale(size: (width: 166.0/1280, height: 64.0/720), leftP: (x: 24.0/1280, y: 24.0/720), rightP: (x: 1-((166+24)/1280.0), y: 24.0/720))
+        let verticalScale = Scale(size: (width:166.0/720,height:64.0/1280), leftP: (x:24.0/720,y:24/1280.0), rightP: (x:1-((166+24)/720.0),y:24/1280.0))
         
         var current = 0.01
         var flag = Bool.random()
         var leftP:CGPoint!
         var rightP:CGPoint!
         
-        let scale = size.width > size.height ? Scale.horizon16to9 : Scale.vertical16to9
+        let scale = size.width > size.height ? horizonScale : verticalScale
         let waterMarkSize = CGSize(width: size.width * scale.size.width, height: size.height * scale.size.height)
         leftP = CGPoint(x: size.width * scale.leftP.x * 0.5, y: size.height * scale.leftP.y * 0.5)
         rightP = CGPoint(x: size.width * scale.rightP.x * 0.5, y: size.height * scale.rightP.y * 0.5)
@@ -154,16 +164,23 @@ class WaterMarkMaker {
     
     // MARK: 私有方法
     
-    private func getTracks(from asset:AVAsset) throws -> (videoTrack:AVAssetTrack,audioTrack:AVAssetTrack){
-        guard let audioAssetTrack = asset.tracks(withMediaType: .audio).first ,let videoAssetTrack = asset.tracks(withMediaType: .video).first else {
+    private func getTracks(from asset:AVAsset) throws -> (videoTrack:AVAssetTrack,audioTrack:AVAssetTrack?){
+        let audioAssetTrack = asset.tracks(withMediaType: .audio).first
+        guard let videoAssetTrack = asset.tracks(withMediaType: .video).first else {
             throw WaterMarkerError.assetTrackNil
         }
         return (videoAssetTrack,audioAssetTrack)
     }
     
-    private func initComposition(assetTracks:(videoTrack:AVAssetTrack,audioTrack:AVAssetTrack)) throws -> AVMutableComposition {
+    private func initComposition(assetTracks:(videoTrack:AVAssetTrack,audioTrack:AVAssetTrack?)) throws -> AVMutableComposition {
         let mixComposition = initComposition()
-        try mixComposition.track(withTrackID: WaterMarkMaker.audioID)!.insertTimeRange(CMTimeRange(start: .zero, duration: assetTracks.audioTrack.asset!.duration), of: assetTracks.audioTrack, at: .zero)
+        
+        if let audioTrack = assetTracks.audioTrack {
+            try mixComposition.track(withTrackID: WaterMarkMaker.audioID)!.insertTimeRange(CMTimeRange(start: .zero, duration: audioTrack.asset!.duration), of: audioTrack, at: .zero)
+        }else {
+            mixComposition.removeTrack(mixComposition.tracks(withMediaType: .audio).first!)
+        }
+        
         try mixComposition.track(withTrackID: WaterMarkMaker.videoID)!.insertTimeRange(CMTimeRange(start: .zero, duration: assetTracks.videoTrack.asset!.duration), of: assetTracks.videoTrack, at: .zero)
         mixComposition.track(withTrackID: WaterMarkMaker.videoID)!.preferredTransform = assetTracks.videoTrack.preferredTransform
         return mixComposition
@@ -180,7 +197,7 @@ class WaterMarkMaker {
         let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMddHHmmss"
-        let outPutFileName = "SnapVideo" + formatter.string(from: Date(timeIntervalSinceNow: 0))
+        let outPutFileName = "WaterMarkVideo" + formatter.string(from: Date(timeIntervalSinceNow: 0))
         let myPathDocs = (documentsDirectory as NSString).appendingPathComponent("\(outPutFileName).mp4")
         let outputVideoURL = URL(fileURLWithPath: myPathDocs)
         return outputVideoURL
@@ -243,7 +260,7 @@ class WaterMarkMaker {
 }
 
 extension WaterMarkMaker {
-    func opacityAnimation(beginTime:CFTimeInterval,duration:CFTimeInterval) -> CABasicAnimation{
+    open func opacityAnimation(beginTime:CFTimeInterval,duration:CFTimeInterval) -> CABasicAnimation{
         let basicAnimation = CABasicAnimation(keyPath: "opacity")
         basicAnimation.fromValue = 1
         basicAnimation.toValue = 1
