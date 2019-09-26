@@ -15,6 +15,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var playView: UIView!
     @IBOutlet weak var playBtn: UIButton!
     @IBOutlet weak var addWaterMarkBtn: UIButton!
+    @IBOutlet weak var replayBtn: UIButton!
     
     var player:AVPlayer! {
         didSet {
@@ -36,11 +37,12 @@ class ViewController: UIViewController {
 
     @IBAction func addAction(_ sender: Any) {
         let maker = WaterMarkMaker.shared
+        let asset = WaterMarkURLAsset(url: self.videoURL)
+        let waterMarks = maker.generateRandomWaterMarks(asset: asset, watermarkImage: UIImage(named: "waterImg")!)
         
-        let asset = AVURLAsset(url: self.videoURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey:true])
-        let waterMarks = try! maker.generateRandomWaterMarks(asset: asset, watermarkImage: UIImage(named: "waterImg")!)
+        maker.addWaterMark(asset: asset, watermarks: waterMarks)
         
-        maker.addWaterMark(asset: asset, watermarks: waterMarks) { (result) in
+        asset.exporter.export { (result) in
             switch result {
             case .success(let url):
                 self.videoURL = url
@@ -61,6 +63,9 @@ class ViewController: UIViewController {
     
     @IBAction func playAction(_ sender: Any) {
         player.play()
+    }
+    @IBAction func replayAction(_ sender: Any) {
+        player.seek(to: CMTime(value: 0, timescale: 1))
     }
     
 }

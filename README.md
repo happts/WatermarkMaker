@@ -10,51 +10,62 @@
 
 ### QuickStart
 ```
-let water = WaterMarkMaker()
-
-let asset = AVURLAsset(url: videourl, options: [AVURLAssetPreferPreciseDurationAndTimingKey:true])
-let autoWM = try! water.generateRandomWaterMarks(asset: asset, watermarkImage: UIImage(named: "test")!, imageSize: CGSize(width: 80, height: 80))
+let maker = WaterMarkMaker.shared
+let asset = WaterMarkURLAsset(url: self.videoURL)
+let waterMarks = maker.generateRandomWaterMarks(asset: asset, watermarkImage: UIImage(named: "waterImg")!)
     
-water.addWaterMark(asset: asset, watermarks: autoWM) { (result) in
+maker.addWaterMark(asset: asset, watermarks: waterMarks)
+    
+asset.exporter.export { (result) in
     switch result {
-    case .success(let outputURL):
+	case .success(let outputURL):
         print("success")
     case .failure(let error):
         print(error.localizedDescription)
     }
 }
-
 ```
 
 ### how to use
 
-1. init WaterMarkMaker
+1. WaterMarkMaker
 
-	`let water = WaterMarkMaker()`
-2. init your WaterMarkView (UIView)
+	`let maker = WaterMarkMaker.shared`
+2. init your WaterMark
 
 	`let view1 = UILabel() //UIImage() etc`
 	
 	`view.frame` is needed
-3. init WaterMark
+3. generate a WaterMark
 	
 	```
 	struct WaterMark {
-	    let view:UIView
-	    let beginTime:CFTimeInterval
-	    let duration:CFTimeInterval
-	    
-	    var animationGroup:CAAnimationGroup? = nil
-	}
+    /// frame is required
+    let layer: CALayer
+
+    let beginTime: CFTimeInterval
+
+    let duration: CFTimeInterval
+
+    var animation: CAAnimation!
+
+    init(view: UIView, beginTime: CFTimeInterval, duration: CFTimeInterval, animation: CAAnimation? = nil)
+
+    init(layer: CALayer, beginTime: CFTimeInterval, duration: CFTimeInterval, animation: CAAnimation? = nil)
+    }
 	
-	let watermark1 = WaterMark(view:view1,beginTime:1,duration2)
+	let watermark1 = WaterMark(view:view1,beginTime:1,duration:2)
 	```
 4. addWaterMark
 	
 	```
-	let asset = AVURLAsset(url: self.url, options: [AVURLAssetPreferPreciseDurationAndTimingKey:true])
-	
-	water.addWaterMark(asset: asset, watermarks: [watermark1,watermark2]) { (result) in
+	let asset = WaterMarkURLAsset(url: self.videoURL)	
+	maker.addWaterMark(asset: asset, watermarks: [watermark1,watermark2])
+	```
+5. exportVideo
+
+	```
+	asset.exporter.export { (result) in
 	    switch result {
 	    case .success(let outputURL):
 	        print("success")

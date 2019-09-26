@@ -26,7 +26,7 @@
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="4P4-Vy-dOX">
-                                <rect key="frame" x="86.5" y="583.5" width="202" height="30"/>
+                                <rect key="frame" x="50.5" y="583.5" width="274" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GZB-gr-LkW">
                                         <rect key="frame" x="0.0" y="0.0" width="68" height="30"/>
@@ -35,8 +35,15 @@
                                             <action selector="playAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="he0-7L-3d1"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9nM-Yw-A4A">
+                                        <rect key="frame" x="98" y="0.0" width="42" height="30"/>
+                                        <state key="normal" title="replay"/>
+                                        <connections>
+                                            <action selector="replayAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fs3-No-cqk"/>
+                                        </connections>
+                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cZx-tD-433">
-                                        <rect key="frame" x="98" y="0.0" width="104" height="30"/>
+                                        <rect key="frame" x="170" y="0.0" width="104" height="30"/>
                                         <state key="normal" title="Add waterMark"/>
                                         <connections>
                                             <action selector="addAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="nsu-IV-d6A"/>
@@ -59,6 +66,7 @@
                         <outlet property="addWaterMarkBtn" destination="cZx-tD-433" id="u7v-cr-xMv"/>
                         <outlet property="playBtn" destination="GZB-gr-LkW" id="qUW-kg-r7c"/>
                         <outlet property="playView" destination="BNR-Tn-nuX" id="k4S-8h-0JV"/>
+                        <outlet property="replayBtn" destination="9nM-Yw-A4A" id="KZR-cN-AYZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

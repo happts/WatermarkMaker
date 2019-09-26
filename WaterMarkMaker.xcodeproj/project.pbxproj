@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A91D71FE233BAE470077BCA8 /* WaterMarkScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D71FD233BAE470077BCA8 /* WaterMarkScale.swift */; };
+		A91D7200233BB2B80077BCA8 /* WaterMarkVideoExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D71FF233BB2B80077BCA8 /* WaterMarkVideoExporter.swift */; };
+		A91D7202233C60FB0077BCA8 /* WaterMarkURLAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D7201233C60FB0077BCA8 /* WaterMarkURLAsset.swift */; };
+		A91D7204233C85D00077BCA8 /* WaterMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D7203233C85D00077BCA8 /* WaterMark.swift */; };
 		A94CD373233A537A00E7E586 /* testmov.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A94CD372233A537A00E7E586 /* testmov.mp4 */; };
 		A98AF0CF2320F27F0005AA92 /* WaterMarkMaker.h in Headers */ = {isa = PBXBuildFile; fileRef = A98AF0CD2320F27F0005AA92 /* WaterMarkMaker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A98AF0D62320F2F20005AA92 /* WaterMarkMaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A98AF0D52320F2F20005AA92 /* WaterMarkMaker.swift */; };
@@ -44,6 +48,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A91D71FD233BAE470077BCA8 /* WaterMarkScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterMarkScale.swift; sourceTree = "<group>"; };
+		A91D71FF233BB2B80077BCA8 /* WaterMarkVideoExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterMarkVideoExporter.swift; sourceTree = "<group>"; };
+		A91D7201233C60FB0077BCA8 /* WaterMarkURLAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterMarkURLAsset.swift; sourceTree = "<group>"; };
+		A91D7203233C85D00077BCA8 /* WaterMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterMark.swift; sourceTree = "<group>"; };
 		A94CD372233A537A00E7E586 /* testmov.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = testmov.mp4; sourceTree = "<group>"; };
 		A98AF0CA2320F27F0005AA92 /* WaterMarkMaker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = WaterMarkMaker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A98AF0CD2320F27F0005AA92 /* WaterMarkMaker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaterMarkMaker.h; sourceTree = "<group>"; };
@@ -98,8 +106,12 @@
 		A98AF0CC2320F27F0005AA92 /* WaterMarkMaker */ = {
 			isa = PBXGroup;
 			children = (
-				A98AF0CD2320F27F0005AA92 /* WaterMarkMaker.h */,
+				A91D7203233C85D00077BCA8 /* WaterMark.swift */,
 				A98AF0D52320F2F20005AA92 /* WaterMarkMaker.swift */,
+				A91D71FD233BAE470077BCA8 /* WaterMarkScale.swift */,
+				A91D7201233C60FB0077BCA8 /* WaterMarkURLAsset.swift */,
+				A91D71FF233BB2B80077BCA8 /* WaterMarkVideoExporter.swift */,
+				A98AF0CD2320F27F0005AA92 /* WaterMarkMaker.h */,
 				A98AF0CE2320F27F0005AA92 /* Info.plist */,
 			);
 			path = WaterMarkMaker;
@@ -235,6 +247,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A98AF0D62320F2F20005AA92 /* WaterMarkMaker.swift in Sources */,
+				A91D71FE233BAE470077BCA8 /* WaterMarkScale.swift in Sources */,
+				A91D7200233BB2B80077BCA8 /* WaterMarkVideoExporter.swift in Sources */,
+				A91D7204233C85D00077BCA8 /* WaterMark.swift in Sources */,
+				A91D7202233C60FB0077BCA8 /* WaterMarkURLAsset.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,6 +428,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = WaterMarkMaker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -439,6 +456,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = WaterMarkMaker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
